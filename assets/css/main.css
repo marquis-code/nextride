@@ -16,3 +16,221 @@
 .dark .bg-custom {
   background-color: #1a202c; /* Dark mode background */
 }
+
+@layer base {
+  html {
+    @apply text-gray-900;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply bg-primary text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary text-white hover:bg-secondary-700 focus:ring-secondary-500;
+  }
+  
+  .btn-danger {
+    @apply bg-danger text-white hover:bg-danger-700 focus:ring-danger-500;
+  }
+  
+  .btn-success {
+    @apply bg-success text-white hover:bg-success-700 focus:ring-success-500;
+  }
+  
+  .btn-warning {
+    @apply bg-warning text-white hover:bg-warning-700 focus:ring-warning-500;
+  }
+  
+  .btn-outline {
+    @apply border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 focus:ring-primary-500;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-card p-6 transition-all duration-200;
+  }
+  
+  .card-hover {
+    @apply hover:shadow-card-hover;
+  }
+  
+  .form-input {
+    @apply w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500;
+  }
+  
+  .form-select {
+    @apply w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500;
+  }
+  
+  .form-checkbox {
+    @apply rounded border-gray-300 text-primary-600 shadow-sm focus:border-primary-500 focus:ring-primary-500;
+  }
+  
+  .form-radio {
+    @apply border-gray-300 text-primary-600 shadow-sm focus:border-primary-500 focus:ring-primary-500;
+  }
+  
+  .table-container {
+    @apply overflow-x-auto rounded-lg border border-gray-200 shadow-sm;
+  }
+  
+  .table {
+    @apply min-w-full divide-y divide-gray-200;
+  }
+  
+  .table-header {
+    @apply bg-gray-50;
+  }
+  
+  .table-header-cell {
+    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+  }
+  
+  .table-body {
+    @apply bg-white divide-y divide-gray-200;
+  }
+  
+  .table-row {
+    @apply hover:bg-gray-50;
+  }
+  
+  .table-cell {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .badge-primary {
+    @apply bg-primary-100 text-primary-800;
+  }
+  
+  .badge-secondary {
+    @apply bg-secondary-100 text-secondary-800;
+  }
+  
+  .badge-success {
+    @apply bg-success-100 text-success-800;
+  }
+  
+  .badge-danger {
+    @apply bg-danger-100 text-danger-800;
+  }
+  
+  .badge-warning {
+    @apply bg-warning-100 text-warning-800;
+  }
+  
+  .badge-gray {
+    @apply bg-gray-100 text-gray-800;
+  }
+  
+  .tooltip {
+    @apply absolute z-10 p-2 text-xs font-medium text-white bg-gray-900 rounded-md shadow-sm;
+  }
+  
+  .dropdown {
+    @apply absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none;
+  }
+  
+  .dropdown-item {
+    @apply block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100;
+  }
+  
+  .modal-backdrop {
+    @apply fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity;
+  }
+  
+  .modal {
+    @apply inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full;
+  }
+  
+  .modal-header {
+    @apply px-4 pt-5 pb-4 sm:p-6 sm:pb-4;
+  }
+  
+  .modal-body {
+    @apply px-4 pt-5 pb-4 sm:p-6 sm:pb-4;
+  }
+  
+  .modal-footer {
+    @apply bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse;
+  }
+  
+  .sidebar {
+    @apply fixed inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out;
+  }
+  
+  .sidebar-item {
+    @apply flex items-center px-4 py-2 text-gray-600 hover:bg-gray-100 hover:text-primary-600 rounded-md transition-colors duration-200;
+  }
+  
+  .sidebar-item-active {
+    @apply bg-primary-50 text-primary-600;
+  }
+  
+  .page-container {
+    @apply flex-1 p-6 lg:p-8 ml-64;
+  }
+  
+  .page-header {
+    @apply mb-6;
+  }
+  
+  .page-title {
+    @apply text-2xl font-bold text-gray-900;
+  }
+  
+  .page-subtitle {
+    @apply mt-1 text-sm text-gray-500;
+  }
+  
+  .stats-card {
+    @apply bg-white rounded-lg shadow-card p-6 transition-all duration-200 hover:shadow-card-hover;
+  }
+  
+  .stats-value {
+    @apply text-3xl font-bold text-gray-900;
+  }
+  
+  .stats-label {
+    @apply text-sm font-medium text-gray-500;
+  }
+  
+  .stats-change {
+    @apply text-sm font-medium;
+  }
+  
+  .stats-change-positive {
+    @apply text-success-600;
+  }
+  
+  .stats-change-negative {
+    @apply text-danger-600;
+  }
+  
+  /* Animations */
+  .fade-in {
+    @apply transition-opacity duration-300 ease-in-out;
+  }
+  
+  .slide-in {
+    @apply transition-transform duration-300 ease-in-out;
+  }
+  
+  .scale-in {
+    @apply transition-transform duration-300 ease-in-out;
+  }
+}

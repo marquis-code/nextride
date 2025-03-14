@@ -1,0 +1,918 @@
+<template>
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Vehicle Tracking & Fleet Management</h1>
+        <div class="mt-4 sm:mt-0">
+          <button 
+            @click="showAddVehicleModal = true"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-700 dark:hover:bg-primary-600"
+          >
+            <Plus class="w-4 h-4 mr-2" />
+            Add Vehicle
+          </button>
+        </div>
+      </div>
+  
+      &lt;!-- Map and Stats Section -->
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        &lt;!-- Map -->
+        <div class="lg:col-span-2">
+          <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+              <div class="flex items-center justify-between">
+                <h2 class="text-lg font-medium text-gray-900 dark:text-white">Live Vehicle Tracking</h2>
+                <div class="flex items-center space-x-2">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{{ activeVehicles.length }} vehicles active</span>
+                  <button 
+                    @click="refreshMap" 
+                    class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <RefreshCw class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="relative h-[500px] bg-gray-100 dark:bg-gray-700">
+              &lt;!-- Google Map would be rendered here -->
+              <div class="flex items-center justify-center h-full text-gray-500 dark:text-gray-400">
+                Google Map with {{ activeVehicles.length }} active vehicles
+              </div>
+              
+              &lt;!-- Map Controls -->
+              <div class="absolute p-2 bg-white rounded-md shadow-md top-4 right-4 dark:bg-gray-800">
+                <div class="flex flex-col space-y-2">
+                  <button class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <Plus class="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  </button>
+                  <button class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <Minus class="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  </button>
+                  <button class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                    <Layers class="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
+              </div>
+              
+              &lt;!-- Vehicle Info Popup (would be shown when a vehicle is clicked) -->
+              <div v-if="selectedVehicle" class="absolute p-4 bg-white rounded-md shadow-md bottom-4 left-4 dark:bg-gray-800">
+                <div class="flex items-start justify-between">
+                  <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ selectedVehicle.name }}</h3>
+                  <button @click="selectedVehicle = null" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                    <X class="w-4 h-4" />
+                  </button>
+                </div>
+                <div class="mt-2 space-y-1">
+                  <p class="text-xs text-gray-500 dark:text-gray-400">ID: {{ selectedVehicle.id }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Type: {{ selectedVehicle.type }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Status: {{ selectedVehicle.status }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Driver: {{ selectedVehicle.driver }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Speed: {{ selectedVehicle.speed }} km/h</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Last Updated: {{ selectedVehicle.lastUpdated }}</p>
+                </div>
+                <div class="flex mt-3 space-x-2">
+                  <button class="px-2 py-1 text-xs text-white bg-primary-600 rounded hover:bg-primary-700 dark:bg-primary-700 dark:hover:bg-primary-600">
+                    Contact Driver
+                  </button>
+                  <button class="px-2 py-1 text-xs text-gray-700 bg-gray-100 rounded hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                    View Details
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        &lt;!-- Stats -->
+        <div class="space-y-6">
+          &lt;!-- Vehicle Status -->
+          <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-white">Vehicle Status</h2>
+            </div>
+            <div class="p-4">
+              <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Available</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ vehicleStats.available }}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div class="bg-green-500 h-2.5 rounded-full" :style="`width: ${(vehicleStats.available / vehicleStats.total) * 100}%`"></div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">On Trip</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ vehicleStats.onTrip }}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div class="bg-blue-500 h-2.5 rounded-full" :style="`width: ${(vehicleStats.onTrip / vehicleStats.total) * 100}%`"></div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Maintenance</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ vehicleStats.maintenance }}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div class="bg-amber-500 h-2.5 rounded-full" :style="`width: ${(vehicleStats.maintenance / vehicleStats.total) * 100}%`"></div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                  <span class="text-sm text-gray-500 dark:text-gray-400">Out of Service</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ vehicleStats.outOfService }}</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div class="bg-red-500 h-2.5 rounded-full" :style="`width: ${(vehicleStats.outOfService / vehicleStats.total) * 100}%`"></div>
+                </div>
+              </div>
+              
+              <div class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">Total Vehicles</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">{{ vehicleStats.total }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          &lt;!-- Vehicle Types -->
+          <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-white">Vehicle Types</h2>
+            </div>
+            <div class="p-4">
+              <div class="space-y-4">
+                <div v-for="(count, type) in vehicleTypes" :key="type" class="flex items-center">
+                  <div class="w-3 h-3 rounded-full" :class="typeColors[type]"></div>
+                  <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">{{ type }}</span>
+                  <span class="ml-auto text-sm font-medium text-gray-900 dark:text-white">{{ count }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          &lt;!-- Maintenance Alerts -->
+          <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-white">Maintenance Alerts</h2>
+            </div>
+            <div class="p-4">
+              <div class="space-y-3">
+                <div v-for="(alert, index) in maintenanceAlerts" :key="index" 
+                  class="p-3 text-sm border rounded-md"
+                  :class="[
+                    alert.severity === 'high' ? 'border-red-200 bg-red-50 text-red-800 dark:border-red-900 dark:bg-red-900/30 dark:text-red-300' :
+                    alert.severity === 'medium' ? 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-900/30 dark:text-amber-300' :
+                    'border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-900 dark:bg-blue-900/30 dark:text-blue-300'
+                  ]"
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="font-medium">{{ alert.vehicle }}</span>
+                    <span class="text-xs">{{ alert.date }}</span>
+                  </div>
+                  <p class="mt-1">{{ alert.message }}</p>
+                </div>
+                
+                <button class="w-full px-4 py-2 mt-2 text-sm text-center text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600">
+                  View All Alerts
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      &lt;!-- Vehicle List -->
+      <div class="overflow-hidden bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Fleet Inventory</h2>
+            
+            <div class="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+              <div class="relative">
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Search vehicles..."
+                  class="w-full px-4 py-2 pl-10 text-sm border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring-primary-500"
+                />
+                <Search class="absolute w-5 h-5 text-gray-400 left-3 top-2.5" />
+              </div>
+              
+              <select 
+                v-model="typeFilter"
+                class="px-4 py-2 text-sm border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring-primary-500"
+              >
+                <option value="">All Types</option>
+                <option value="Sedan">Sedan</option>
+                <option value="SUV">SUV</option>
+                <option value="Van">Van</option>
+                <option value="Bus">Bus</option>
+              </select>
+              
+              <select 
+                v-model="statusFilter"
+                class="px-4 py-2 text-sm border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring-primary-500"
+              >
+                <option value="">All Status</option>
+                <option value="Available">Available</option>
+                <option value="On Trip">On Trip</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Out of Service">Out of Service</option>
+              </select>
+              
+              <button 
+                @click="exportToCSV"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+              >
+                <Download class="w-4 h-4 mr-2" />
+                Export CSV
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-700">
+              <tr>
+                <th 
+                  v-for="header in tableHeaders" 
+                  :key="header.key"
+                  scope="col" 
+                  class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase dark:text-gray-400"
+                >
+                  <div class="flex items-center space-x-1 cursor-pointer" @click="sortBy(header.key)">
+                    <span>{{ header.label }}</span>
+                    <ChevronUp v-if="sortColumn === header.key && sortDirection === 'asc'" class="w-4 h-4" />
+                    <ChevronDown v-else-if="sortColumn === header.key && sortDirection === 'desc'" class="w-4 h-4" />
+                  </div>
+                </th>
+                <th scope="col" class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase dark:text-gray-400">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
+              <tr v-for="vehicle in filteredVehicles" :key="vehicle.id" class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 w-10 h-10">
+                      <div class="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full dark:bg-gray-700">
+                        <TruckIcon class="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900 dark:text-white">{{ vehicle.name }}</div>
+                      <div class="text-sm text-gray-500 dark:text-gray-400">ID: {{ vehicle.id }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900 dark:text-white">{{ vehicle.type }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ vehicle.model }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span 
+                    :class="[
+                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                      statusClasses[vehicle.status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                    ]"
+                  >
+                    {{ vehicle.status }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900 dark:text-white">{{ vehicle.driver || 'Unassigned' }}</div>
+                  <div v-if="vehicle.driver" class="text-sm text-gray-500 dark:text-gray-400">ID: {{ vehicle.driverId || 'N/A' }}</div>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500 whitespace-nowrap dark:text-gray-400">
+                  {{ vehicle.lastUpdated }}
+                </td>
+                <td class="px-6 py-4 text-sm font-medium text-right whitespace-nowrap">
+                  <div class="flex justify-end space-x-2">
+                    <button 
+                      @click="viewVehicleOnMap(vehicle)"
+                      class="text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-300"
+                      title="View on Map"
+                    >
+                      <MapPin class="w-5 h-5" />
+                    </button>
+                    <button 
+                      @click="editVehicle(vehicle)"
+                      class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                      title="Edit"
+                    >
+                      <Edit class="w-5 h-5" />
+                    </button>
+                    <button 
+                      @click="scheduleMaintenanceModal(vehicle)"
+                      class="text-amber-600 hover:text-amber-900 dark:text-amber-400 dark:hover:text-amber-300"
+                      title="Schedule Maintenance"
+                    >
+                      <Tool class="w-5 h-5" />
+                    </button>
+                    <button 
+                      @click="deleteVehicle(vehicle)"
+                      class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                      title="Delete"
+                    >
+                      <Trash2 class="w-5 h-5" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr v-if="filteredVehicles.length === 0">
+                <td colspan="6" class="px-6 py-4 text-sm text-center text-gray-500 dark:text-gray-400">
+                  No vehicles found matching your criteria
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        &lt;!-- Pagination -->
+        <div class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 dark:bg-gray-800 dark:border-gray-700 sm:px-6">
+          <div class="flex items-center">
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              Showing
+              <span class="font-medium">{{ paginationStart }}</span>
+              to
+              <span class="font-medium">{{ paginationEnd }}</span>
+              of
+              <span class="font-medium">{{ filteredVehicles.length }}</span>
+              results
+            </p>
+          </div>
+          <div class="flex space-x-2">
+            <button
+              :disabled="currentPage === 1"
+              @click="currentPage--"
+              :class="[
+                'relative inline-flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                currentPage === 1
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 bg-white hover:bg-gray-50 dark:text-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700'
+              ]"
+            >
+              <ChevronLeft class="w-5 h-5" />
+            </button>
+            <button
+              :disabled="paginationEnd >= filteredVehicles.length"
+              @click="currentPage++"
+              :class="[
+                'relative inline-flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                paginationEnd >= filteredVehicles.length
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-gray-700 bg-white hover:bg-gray-50 dark:text-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700'
+              ]"
+            >
+              <ChevronRight class="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </div>
+  
+      &lt;!-- Add/Edit Vehicle Modal -->
+      <div v-if="showAddVehicleModal" class="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto">
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" @click="showAddVehicleModal = false"></div>
+        <div class="relative z-50 w-full max-w-md p-6 mx-auto bg-white rounded-lg shadow-xl dark:bg-gray-800">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+              {{ editingVehicle ? 'Edit Vehicle' : 'Add New Vehicle' }}
+            </h3>
+            <button @click="showAddVehicleModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+          <form @submit.prevent="saveVehicle">
+            <div class="space-y-4">
+              <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Vehicle Name</label>
+                <input
+                  id="name"
+                  v-model="vehicleForm.name"
+                  type="text"
+                  required
+                  class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring-primary-500"
+                />
+              </div>
+              <div>
+                <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
+                <select
+                  id="type"
+                  v-model="vehicleForm.type"
+                  required
+                  class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring-primary-500"
+                >
+                  <option value="Sedan">Sedan</option>
+                  <option value="SUV">SUV</option>
+                  <option value="Van">Van</option>
+                  <option value="Bus">Bus</option>
+                </select>
+              </div>
+              <div>
+                <label for="model" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Model</label>
+                <input
+                  id="model"
+                  v-model="vehicleForm.model"
+                  type="text"
+                  required
+                  class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring-primary-500"
+                />
+              </div>
+              <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                <select
+                  id="status"
+                  v-model="vehicleForm.status"
+                  required
+                  class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring-primary-500"
+                >
+                  <option value="Available">Available</option>
+                  <option value="On Trip">On Trip</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Out of Service">Out of Service</option>
+                </select>
+              </div>
+              <div>
+                <label for="driver" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Driver (Optional)</label>
+                <input
+                  id="driver"
+                  v-model="vehicleForm.driver"
+                  type="text"
+                  class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring-primary-500"
+                />
+              </div>
+            </div>
+            <div class="flex justify-end mt-6 space-x-3">
+              <button
+                type="button"
+                @click="showAddVehicleModal = false"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-700 dark:hover:bg-primary-600"
+              >
+                {{ editingVehicle ? 'Update' : 'Create' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+  
+      &lt;!-- Delete Confirmation Modal -->
+      <div v-if="showDeleteModal" class="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto">
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" @click="showDeleteModal = false"></div>
+        <div class="relative z-50 w-full max-w-md p-6 mx-auto bg-white rounded-lg shadow-xl dark:bg-gray-800">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Confirm Delete</h3>
+            <button @click="showDeleteModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+          <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">
+            Are you sure you want to delete the vehicle "{{ vehicleToDelete?.name }}"? This action cannot be undone.
+          </p>
+          <div class="flex justify-end space-x-3">
+            <button
+              @click="showDeleteModal = false"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              @click="confirmDelete"
+              class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:bg-red-700 dark:hover:bg-red-600"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+  
+      &lt;!-- Maintenance Modal -->
+      <div v-if="showMaintenanceModal" class="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto">
+        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" @click="showMaintenanceModal = false"></div>
+        <div class="relative z-50 w-full max-w-md p-6 mx-auto bg-white rounded-lg shadow-xl dark:bg-gray-800">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Schedule Maintenance</h3>
+            <button @click="showMaintenanceModal = false" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+          <form @submit.prevent="scheduleMaintenance">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Vehicle</label>
+                <div class="p-3 mt-1 border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white">{{ maintenanceVehicle?.name }}</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">ID: {{ maintenanceVehicle?.id }}</p>
+                </div>
+              </div>
+              <div>
+                <label for="maintenanceType" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Maintenance Type</label>
+                <select
+                  id="maintenanceType"
+                  v-model="maintenanceForm.type"
+                  required
+                  class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring-primary-500"
+                >
+                  <option value="Routine Check">Routine Check</option>
+                  <option value="Oil Change">Oil Change</option>
+                  <option value="Tire Replacement">Tire Replacement</option>
+                  <option value="Battery Replacement">Battery Replacement</option>
+                  <option value="Major Repair">Major Repair</option>
+                </select>
+              </div>
+              <div>
+                <label for="maintenanceDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Date</label>
+                <input
+                  id="maintenanceDate"
+                  v-model="maintenanceForm.date"
+                  type="date"
+                  required
+                  class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring-primary-500"
+                />
+              </div>
+              <div>
+                <label for="maintenanceNotes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
+                <textarea
+                  id="maintenanceNotes"
+                  v-model="maintenanceForm.notes"
+                  rows="3"
+                  class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:border-primary-500 focus:ring-primary-500"
+                ></textarea>
+              </div>
+              <div class="flex items-center">
+                <input
+                  id="setOutOfService"
+                  v-model="maintenanceForm.setOutOfService"
+                  type="checkbox"
+                  class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700"
+                />
+                <label for="setOutOfService" class="block ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  Set vehicle as "Out of Service" during maintenance
+                </label>
+              </div>
+            </div>
+            <div class="flex justify-end mt-6 space-x-3">
+              <button
+                type="button"
+                @click="showMaintenanceModal = false"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:bg-primary-700 dark:hover:bg-primary-600"
+              >
+                Schedule
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </template>
+  
+  <script setup lang="ts">
+  import { ref, computed, onMounted } from 'vue';
+  import { 
+    TruckIcon, Plus, Minus, Layers, MapPin, Search, Download, RefreshCw, 
+    Edit, Trash2, Tool, X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight
+  } from 'lucide-vue-next';
+  import { useVehicleManagement } from '~/composables/useVehicleManagement';
+  
+  // Table headers
+  const tableHeaders = [
+    { key: 'name', label: 'Vehicle' },
+    { key: 'type', label: 'Type' },
+    { key: 'status', label: 'Status' },
+    { key: 'driver', label: 'Driver' },
+    { key: 'lastUpdated', label: 'Last Updated' }
+  ];
+  
+  // Styling classes
+  const statusClasses = {
+    'Available': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300',
+    'On Trip': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300',
+    'Maintenance': 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300',
+    'Out of Service': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+  };
+  
+  const typeColors = {
+    'Sedan': 'bg-blue-500',
+    'SUV': 'bg-green-500',
+    'Van': 'bg-purple-500',
+    'Bus': 'bg-amber-500'
+  };
+  
+  // Vehicle management composable
+  const { 
+    vehicles, 
+    addVehicle, 
+    updateVehicle, 
+    deleteVehicleById
+  } = useVehicleManagement();
+  
+  // Active vehicles for map
+  const activeVehicles = computed(() => {
+    return vehicles.value.filter(v => v.status === 'Available' || v.status === 'On Trip');
+  });
+  
+  // Vehicle stats
+  const vehicleStats = computed(() => {
+    const stats = {
+      available: 0,
+      onTrip: 0,
+      maintenance: 0,
+      outOfService: 0,
+      total: vehicles.value.length
+    };
+    
+    vehicles.value.forEach(vehicle => {
+      if (vehicle.status === 'Available') stats.available++;
+      else if (vehicle.status === 'On Trip') stats.onTrip++;
+      else if (vehicle.status === 'Maintenance') stats.maintenance++;
+      else if (vehicle.status === 'Out of Service') stats.outOfService++;
+    });
+    
+    return stats;
+  });
+  
+  // Vehicle types
+  const vehicleTypes = computed(() => {
+    const types: Record<string, number> = {};
+    
+    vehicles.value.forEach(vehicle => {
+      if (types[vehicle.type]) {
+        types[vehicle.type]++;
+      } else {
+        types[vehicle.type] = 1;
+      }
+    });
+    
+    return types;
+  });
+  
+  // Maintenance alerts
+  const maintenanceAlerts = ref([
+    {
+      vehicle: 'Nextride Van #V003',
+      message: 'Engine check required - 5000km service due',
+      date: '2025-03-20',
+      severity: 'medium'
+    },
+    {
+      vehicle: 'Nextride Sedan #V007',
+      message: 'Brake system failure detected',
+      date: '2025-03-15',
+      severity: 'high'
+    },
+    {
+      vehicle: 'Nextride SUV #V012',
+      message: 'Routine maintenance scheduled',
+      date: '2025-03-25',
+      severity: 'low'
+    }
+  ]);
+  
+  // Filters and search
+  const searchQuery = ref('');
+  const typeFilter = ref('');
+  const statusFilter = ref('');
+  
+  // Sorting
+  const sortColumn = ref('name');
+  const sortDirection = ref<'asc' | 'desc'>('asc');
+  
+  // Pagination
+  const currentPage = ref(1);
+  const itemsPerPage = ref(10);
+  
+  // Modals
+  const showAddVehicleModal = ref(false);
+  const showDeleteModal = ref(false);
+  const showMaintenanceModal = ref(false);
+  const editingVehicle = ref<any>(null);
+  const vehicleToDelete = ref<any>(null);
+  const maintenanceVehicle = ref<any>(null);
+  const selectedVehicle = ref<any>(null);
+  
+  // Forms
+  const vehicleForm = ref({
+    id: '',
+    name: '',
+    type: 'Sedan',
+    model: '',
+    status: 'Available',
+    driver: '',
+    driverId: '',
+    lastUpdated: '',
+    location: { lat: 0, lng: 0 },
+    speed: 0
+  });
+  
+  const maintenanceForm = ref({
+    type: 'Routine Check',
+    date: '',
+    notes: '',
+    setOutOfService: false
+  });
+  
+  // Filtered and sorted vehicles
+  const filteredVehicles = computed(() => {
+    let result = [...vehicles.value];
+    
+    // Apply search filter
+    if (searchQuery.value) {
+      const query = searchQuery.value.toLowerCase();
+      result = result.filter(vehicle => 
+        vehicle.name.toLowerCase().includes(query) || 
+        vehicle.id.toLowerCase().includes(query) ||
+        (vehicle.driver && vehicle.driver.toLowerCase().includes(query))
+      );
+    }
+    
+    // Apply type filter
+    if (typeFilter.value) {
+      result = result.filter(vehicle => vehicle.type === typeFilter.value);
+    }
+    
+    // Apply status filter
+    if (statusFilter.value) {
+      result = result.filter(vehicle => vehicle.status === statusFilter.value);
+    }
+    
+    // Apply sorting
+    result.sort((a, b) => {
+      const aValue = a[sortColumn.value];
+      const bValue = b[sortColumn.value];
+      
+      if (aValue &lt; bValue) return sortDirection.value === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection.value === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    return result;
+  });
+  
+  // Pagination computed properties
+  const paginationStart = computed(() => {
+    return (currentPage.value - 1) * itemsPerPage.value + 1;
+  });
+  
+  const paginationEnd = computed(() => {
+    return Math.min(currentPage.value * itemsPerPage.value, filteredVehicles.value.length);
+  });
+  
+  const paginatedVehicles = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage.value;
+    const end = start + itemsPerPage.value;
+    return filteredVehicles.value.slice(start, end);
+  });
+  
+  // Methods
+  const sortBy = (column: string) => {
+    if (sortColumn.value === column) {
+      sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortColumn.value = column;
+      sortDirection.value = 'asc';
+    }
+  };
+  
+  const refreshMap = () => {
+    // In a real app, this would refresh the map data
+    console.log('Refreshing map data...');
+  };
+  
+  const viewVehicleOnMap = (vehicle: any) => {
+    selectedVehicle.value = vehicle;
+    // In a real app, this would center the map on the vehicle
+    console.log('Viewing vehicle on map:', vehicle.id);
+  };
+  
+  const editVehicle = (vehicle: any) => {
+    editingVehicle.value = vehicle;
+    vehicleForm.value = { ...vehicle };
+    showAddVehicleModal.value = true;
+  };
+  
+  const deleteVehicle = (vehicle: any) => {
+    vehicleToDelete.value = vehicle;
+    showDeleteModal.value = true;
+  };
+  
+  const confirmDelete = () => {
+    if (vehicleToDelete.value) {
+      deleteVehicleById(vehicleToDelete.value.id);
+      showDeleteModal.value = false;
+      vehicleToDelete.value = null;
+    }
+  };
+  
+  const scheduleMaintenanceModal = (vehicle: any) => {
+    maintenanceVehicle.value = vehicle;
+    maintenanceForm.value = {
+      type: 'Routine Check',
+      date: new Date().toISOString().split('T')[0],
+      notes: '',
+      setOutOfService: false
+    };
+    showMaintenanceModal.value = true;
+  };
+  
+  const scheduleMaintenance = () => {
+    if (maintenanceVehicle.value) {
+      // In a real app, this would schedule maintenance
+      console.log('Scheduling maintenance for vehicle:', maintenanceVehicle.value.id);
+      
+      if (maintenanceForm.value.setOutOfService) {
+        updateVehicle({
+          ...maintenanceVehicle.value,
+          status: 'Out of Service'
+        });
+      }
+      
+      // Add to maintenance alerts
+      maintenanceAlerts.value.unshift({
+        vehicle: maintenanceVehicle.value.name,
+        message: `${maintenanceForm.value.type} - ${maintenanceForm.value.notes}`,
+        date: maintenanceForm.value.date,
+        severity: 'medium'
+      });
+      
+      showMaintenanceModal.value = false;
+      maintenanceVehicle.value = null;
+    }
+  };
+  
+  const saveVehicle = () => {
+    if (editingVehicle.value) {
+      updateVehicle({
+        ...vehicleForm.value,
+        id: editingVehicle.value.id
+      });
+    } else {
+      addVehicle({
+        ...vehicleForm.value,
+        id: `V${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+        lastUpdated: new Date().toLocaleString(),
+        location: { lat: 40.7128 + (Math.random() - 0.5) * 0.1, lng: -74.0060 + (Math.random() - 0.5) * 0.1 },
+        speed: Math.floor(Math.random() * 60)
+      });
+    }
+    
+    showAddVehicleModal.value = false;
+    editingVehicle.value = null;
+    vehicleForm.value = {
+      id: '',
+      name: '',
+      type: 'Sedan',
+      model: '',
+      status: 'Available',
+      driver: '',
+      driverId: '',
+      lastUpdated: '',
+      location: { lat: 0, lng: 0 },
+      speed: 0
+    };
+  };
+  
+  const exportToCSV = () => {
+    // Generate CSV content
+    const headers = ['ID', 'Name', 'Type', 'Model', 'Status', 'Driver', 'Last Updated'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredVehicles.value.map(vehicle => [
+        vehicle.id,
+        vehicle.name,
+        vehicle.type,
+        vehicle.model,
+        vehicle.status,
+        vehicle.driver || 'Unassigned',
+        vehicle.lastUpdated
+      ].join(','))
+    ].join('\n');
+    
+    // Create a blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'vehicles.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  
+  onMounted(() => {
+    // In a real app, this would fetch data from an API
+    console.log('Vehicle tracking component mounted');
+  });
+  </script>
