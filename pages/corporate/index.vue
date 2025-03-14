@@ -249,7 +249,7 @@ import {
   MapPin
 } from 'lucide-vue-next';
 import Chart from 'chart.js/auto';
-import { useExportData } from '~/composables/useExportData';
+// import { useExportData } from '@/composables/useExportCsv';
 
 // Refs for chart canvases
 const tripUsageChart = ref<HTMLCanvasElement | null>(null);
@@ -504,7 +504,7 @@ watch([tripChartPeriod, expenseChartPeriod], () => {
 });
 
 // Export data functionality
-const { exportToCsv } = useExportData();
+// const { exportToCsv } = useExportData();
 
 const exportData = () => {
   const data = [
@@ -528,7 +528,7 @@ const exportData = () => {
     ]);
   });
   
-  exportToCsv(data, `mobility-dashboard-${selectedPeriod.value}-${new Date().toISOString().split('T')[0]}.csv`);
+  // exportToCsv(data, `mobility-dashboard-${selectedPeriod.value}-${new Date().toISOString().split('T')[0]}.csv`);
 };
 
 // Initialize charts on component mount

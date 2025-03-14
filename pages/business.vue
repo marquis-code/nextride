@@ -7,7 +7,7 @@
       <div class="flex lg:flex-1">
         <a href="#" class="-m-1.5 p-1.5">
           <span class="sr-only">Your Company</span>
-          <img class="h-8 w-auto"  src="@/assets/img/logo.png" alt="">
+          <!-- <img class="h-8 w-auto"  src="@/assets/img/logo.png" alt=""> -->
         </a>
       </div>
       <div class="flex lg:hidden">
@@ -91,7 +91,7 @@
     <div class="mx-auto mt-16 flex max-w-2xl sm:mt-24 lg:ml-10 lg:mr-0 lg:mt-0 lg:max-w-none lg:flex-none xl:ml-32">
       <div class="max-w-3xl flex-none sm:max-w-5xl lg:max-w-none">
         <div class="-m-2 rounded-xl bg-gray-900/5 p-2 ring-1 ring-inset ring-gray-900/10 lg:-m-4 lg:rounded-2xl lg:p-4">
-          <img data-aos="fade-up" src="@/assets/img/girls.jpg" alt="App screenshot" width="2432" height="142" class="w-[76rem] rounded-md shadow-2xl ring-1 ring-gray-900/10">
+          <!-- <img data-aos="fade-up" src="@/assets/img/girls.jpg" alt="App screenshot" width="2432" height="142" class="w-[76rem] rounded-md shadow-2xl ring-1 ring-gray-900/10"> -->
         </div>
       </div>
     </div>

@@ -9,7 +9,7 @@
       >
         <div class="flex items-center justify-between px-4 py-4 border-b dark:border-gray-700">
           <div class="flex items-center space-x-2">
-            <img src="/logo.svg" alt="Nextride Logo" class="w-8 h-8" />
+            <!-- <img src="/logo.svg" alt="Nextride Logo" class="w-8 h-8" /> -->
             <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400">Nextride</h2>
           </div>
           <button 
@@ -48,7 +48,7 @@
         
         <div class="p-4 border-t border-gray-200 dark:border-gray-700">
           <div class="flex items-center">
-            <img src="/avatar.svg" alt="User avatar" class="w-8 h-8 rounded-full" />
+            <!-- <img src="/avatar.svg" alt="User avatar" class="w-8 h-8 rounded-full" /> -->
             <div class="ml-3">
               <p class="text-sm font-medium text-gray-700 dark:text-gray-300">Admin User</p>
               <button @click="logout" class="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400">

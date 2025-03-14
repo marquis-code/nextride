@@ -451,7 +451,7 @@
     MapPin,
     AlertTriangle
   } from 'lucide-vue-next';
-  import { useExportData } from '~/composables/useExportData';
+  // import { useExportData } from '~/composables/useExportData';
   
   // Tabs
   const tabs = [
@@ -845,7 +845,7 @@
   };
   
   // Export functionality
-  const { exportToCsv } = useExportData();
+  // const { exportToCsv } = useExportData();
   
   const exportTrips = () => {
     const data = [
@@ -867,7 +867,7 @@
       ]);
     });
     
-    exportToCsv(data, `trips-export-${new Date().toISOString().split('T')[0]}.csv`);
+    // exportToCsv(data, `trips-export-${new Date().toISOString().split('T')[0]}.csv`);
   };
 
   definePageMeta({

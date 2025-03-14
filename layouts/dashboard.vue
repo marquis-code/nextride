@@ -10,7 +10,7 @@
       >
         <div class="flex items-center justify-between p-4 border-b dark:border-gray-700">
           <div class="flex items-center">
-            <img src="/logo.svg" alt="Nextride Logo" class="h-8 w-8 mr-2" />
+            <!-- <img src="/logo.svg" alt="Nextride Logo" class="h-8 w-8 mr-2" /> -->
             <h1
               :class="[
                 'font-bold text-xl text-primary transition-opacity duration-200',
